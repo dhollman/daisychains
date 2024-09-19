@@ -14,7 +14,7 @@ struct indices_for_impl;
 
 template <class... Links>
 struct indices_for_impl<meta::type_list<Links...>>
-  : std::type_identity<std::index_sequence_for<Ts...>> {};
+  : std::type_identity<std::index_sequence_for<Links...>> {};
 
 }  // namespace impl
 

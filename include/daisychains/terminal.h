@@ -6,9 +6,9 @@ namespace dc {
 
 namespace impl {
 
-struct missing_terminal {};
+template <class Derived>
+class terminal_base {};
 
 }  // namespace impl
-
 
 }  // namespace dc

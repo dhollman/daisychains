@@ -11,6 +11,9 @@ struct type_list;
 
 namespace impl {
 
+struct missing_generator {};
+struct missing_terminal {};
+
 template <class Derived>
 class link_base;
 
