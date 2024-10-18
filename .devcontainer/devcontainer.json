@@ -1,0 +1,68 @@
+{
+  "name": "dhollman-cxx-devcontainer",
+  "features": {
+    "ghcr.io/devcontainers-community/features/llvm:3": {
+      "version": "latest"
+    },
+    "ghcr.io/mikaello/devcontainer-features/modern-shell-utils:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+	"github.copilot",
+	"github.copilot-chat",
+	"jakob-erzar.llvm-tablegen",
+	"llvm-vs-code-extensions.vscode-clangd",
+	"ms-vscode.cmake-tools",
+	"ms-vscode.cpptools",
+	"ms-vscode.cpptools-extension-pack",
+	"ms-vscode.cpptools-themes",
+	"twxs.cmake",
+	"usernamehw.errorlens",
+	"vscodevim.vim",
+	"xaver.clang-format"
+      ],
+      "settings": {
+	{
+	  "cmake.options.statusBarVisibility": "visible",
+	  "cmake.pinnedCommands": [
+	    "workbench.action.tasks.configureTaskRunner",
+	    "workbench.action.tasks.runTask"
+	  ],
+	  "[cpp]": {
+	    "editor.defaultFormatter": "xaver.clang-format"
+	  },
+	  "github.copilot.chat.experimental.generateTests.codeLens": true,
+	  "github.copilot.chat.experimental.inlineChatCompletionTrigger.enabled": true,
+	  "github.copilot.chat.experimental.temporalContext.enabled": true,
+	  "github.copilot.preferredAccount": "dhollman",
+	  "editor.tabSize": 2,
+	  "editor.minimap.enabled": false,
+	  "cmake.showOptionsMovedNotification": false,
+	  "github.copilot.enable": {
+	    "*": true,
+	    "plaintext": false,
+	    "markdown": false,
+	    "scminput": false
+	  },
+	  "C_Cpp.default.cppStandard": "c++23",
+	  "C_Cpp.intelliSenseEngine": "disabled",
+	  "clangd.arguments": [
+	    "-pretty",
+	    "--log=verbose",
+	    "--clang-tidy",
+	    "--all-scopes-completion",
+	    "--cross-file-rename",
+	    "--completion-style=detailed",
+	    "--header-insertion-decorators",
+	    "--header-insertion=iwyu",
+	    "--pch-storage=memory",
+	    "--include-cleaner-stdlib"
+	  ],
+	  "editor.inlayHints.fontSize": 12,
+	  "editor.inlayHints.padding": true,
+	  "errorLens.fontStyleItalic": true
+	}
+      }
+    }
+  }
