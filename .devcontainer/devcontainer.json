@@ -23,46 +23,45 @@
 	"xaver.clang-format"
       ],
       "settings": {
-	{
-	  "cmake.options.statusBarVisibility": "visible",
-	  "cmake.pinnedCommands": [
-	    "workbench.action.tasks.configureTaskRunner",
-	    "workbench.action.tasks.runTask"
-	  ],
-	  "[cpp]": {
-	    "editor.defaultFormatter": "xaver.clang-format"
-	  },
-	  "github.copilot.chat.experimental.generateTests.codeLens": true,
-	  "github.copilot.chat.experimental.inlineChatCompletionTrigger.enabled": true,
-	  "github.copilot.chat.experimental.temporalContext.enabled": true,
-	  "github.copilot.preferredAccount": "dhollman",
-	  "editor.tabSize": 2,
-	  "editor.minimap.enabled": false,
-	  "cmake.showOptionsMovedNotification": false,
-	  "github.copilot.enable": {
-	    "*": true,
-	    "plaintext": false,
-	    "markdown": false,
-	    "scminput": false
-	  },
-	  "C_Cpp.default.cppStandard": "c++23",
-	  "C_Cpp.intelliSenseEngine": "disabled",
-	  "clangd.arguments": [
-	    "-pretty",
-	    "--log=verbose",
-	    "--clang-tidy",
-	    "--all-scopes-completion",
-	    "--cross-file-rename",
-	    "--completion-style=detailed",
-	    "--header-insertion-decorators",
-	    "--header-insertion=iwyu",
-	    "--pch-storage=memory",
-	    "--include-cleaner-stdlib"
-	  ],
-	  "editor.inlayHints.fontSize": 12,
-	  "editor.inlayHints.padding": true,
-	  "errorLens.fontStyleItalic": true
-	}
+	"cmake.options.statusBarVisibility": "visible",
+	"cmake.pinnedCommands": [
+	  "workbench.action.tasks.configureTaskRunner",
+	  "workbench.action.tasks.runTask"
+	],
+	"[cpp]": {
+	  "editor.defaultFormatter": "xaver.clang-format"
+	},
+	"github.copilot.chat.experimental.generateTests.codeLens": true,
+	"github.copilot.chat.experimental.inlineChatCompletionTrigger.enabled": true,
+	"github.copilot.chat.experimental.temporalContext.enabled": true,
+	"github.copilot.preferredAccount": "dhollman",
+	"editor.tabSize": 2,
+	"editor.minimap.enabled": false,
+	"cmake.showOptionsMovedNotification": false,
+	"github.copilot.enable": {
+	  "*": true,
+	  "plaintext": false,
+	  "markdown": false,
+	  "scminput": false
+	},
+	"C_Cpp.default.cppStandard": "c++23",
+	"C_Cpp.intelliSenseEngine": "disabled",
+	"clangd.arguments": [
+	  "-pretty",
+	  "--log=verbose",
+	  "--clang-tidy",
+	  "--all-scopes-completion",
+	  "--cross-file-rename",
+	  "--completion-style=detailed",
+	  "--header-insertion-decorators",
+	  "--header-insertion=iwyu",
+	  "--pch-storage=memory",
+	  "--include-cleaner-stdlib"
+	],
+	"editor.inlayHints.fontSize": 12,
+	"editor.inlayHints.padding": true,
+	"errorLens.fontStyleItalic": true
       }
     }
   }
+}
