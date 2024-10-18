@@ -25,4 +25,6 @@ class terminal_base;
 
 }  // namespace impl
 
+class push_result;
+
 }  // namespace dc

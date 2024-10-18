@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "daisychains/concepts.h"
+#include "daisychains/fwd.h"
 #include "daisychains/meta.h"
 #include "daisychains/terminal.h"
 
@@ -36,11 +37,6 @@ struct link_storage {
   requires std::constructible_from<
       Wrapped, LinkDeduced&&> constexpr explicit link_storage(LinkDeduced&& in)
       : link(std::forward<LinkDeduced>(in)) {}
-
-  constexpr link_storage(link_storage const&) = default;
-  constexpr link_storage(link_storage&&) = default;
-  constexpr link_storage& operator=(link_storage const&) = default;
-  constexpr link_storage& operator=(link_storage&&) = default;
 };
 
 template <class TL, class Seq = meta::indices_for<TL>>
@@ -52,7 +48,7 @@ struct incomplete_chain_storage_impl<meta::type_list<Links...>,
     : link_storage<Links, Idxs>... {
   template <class... LinksDeduced>
   requires(std::constructible_from<Links, LinksDeduced&&>&&...)
-      incomplete_chain_storage_impl(LinksDeduced&&... links)
+  constexpr explicit incomplete_chain_storage_impl(LinksDeduced&&... links)
       : link_storage<Links, Idxs>(std::forward<LinksDeduced>(links))... {}
 };
 
@@ -72,7 +68,7 @@ struct incomplete_chain<meta::type_list<Links...>, Generator, Terminal,
       requires std::constructible_from<Generator, GeneratorDeduced&&>&&
           std::constructible_from<Terminal, TerminalDeduced&&> &&
       (std::constructible_from<Links, LinksDeduced&&> && ...)
-          incomplete_chain(GeneratorDeduced&& gen, TerminalDeduced&& term,
+        constexpr incomplete_chain(GeneratorDeduced&& gen, TerminalDeduced&& term,
                            LinksDeduced&&... links)
       : impl::link_storage<Links, Idxs>(std::forward<LinksDeduced>(links))...,
   generator_(std::forward<GeneratorDeduced>(gen)),
@@ -87,7 +83,8 @@ struct incomplete_chain<meta::type_list<Links...>, Generator, Terminal,
       !std::is_same_v<Terminal, impl::missing_generator>;
 
   template <class Self, dc::Generator GeneratorDeduced>
-  requires(!has_terminal && !has_generator) constexpr auto with_generator(
+    requires(!has_terminal && !has_generator)
+  constexpr auto with_generator(
       this Self&& self, GeneratorDeduced&& gen) {
     return incomplete_chain<meta::type_list<Links...>,
                             std::remove_cvref_t<GeneratorDeduced>,
@@ -100,13 +97,15 @@ struct incomplete_chain<meta::type_list<Links...>, Generator, Terminal,
   // incomplete -> incomplete
   // (possibly with generator)
   template <class Self, Link NextLink>
-  requires(!has_terminal) constexpr auto operator|(this Self&& self,
-                                                   NextLink&& next) {
+    requires(!has_terminal)  //
+  constexpr auto
+      operator|(this Self&& self, NextLink&& next) {
     // TODO check that the next link has a compatible input category with
     // the current last link's output
     return incomplete_chain<
         meta::type_list<Links..., std::remove_cvref_t<NextLink>>, Generator,
         Terminal>{std::forward_like<Self>(self.generator_),
+                  impl::missing_terminal{},
                   std::forward_like<Self>(
                       self.template link_storage<Links, Idxs>::link)...,
                   std::forward<NextLink>(next)};
@@ -115,8 +114,7 @@ struct incomplete_chain<meta::type_list<Links...>, Generator, Terminal,
   // incomplete (no generator or terminal) -> incomplete (no generator)
   template <class Self, dc::Terminal TerminalDeduced>
   requires(!has_generator && !has_terminal)  //
-      constexpr auto
-      operator|(this Self&& self, TerminalDeduced&& next) {
+  constexpr auto operator|(this Self&& self, TerminalDeduced&& next) {
     return incomplete_chain<meta::type_list<Links...>, Generator,
                             std::remove_cvref_t<TerminalDeduced>>{
         impl::missing_generator{}, std::forward<TerminalDeduced>(next),
@@ -139,8 +137,8 @@ struct incomplete_chain<meta::type_list<Links...>, Generator, Terminal,
 
   // TODO make this private?
   template <class Self>
-  requires(has_generator&& has_terminal)  //
-      constexpr auto complete_chain(this Self&& self) {
+    requires (has_generator && has_terminal)  //
+  constexpr auto complete_chain(this Self&& self) {
     auto generated = Generator::get_output_types();
     auto imbued =
         [&]<class... Args>(Args&&... args) {
@@ -148,8 +146,17 @@ struct incomplete_chain<meta::type_list<Links...>, Generator, Terminal,
                   std::forward<Args>(args));
         }(self.template link_storage<Links, Idxs>::link...,
           std::forward_like<Self>(self.terminal_));
-    return std::move(imbued).prev().construct_adaptor(
+    // We need the .prev() so that we don't try to construct an adaptor
+    // for the terminal
+    auto complete_chain = imbued.prev().construct_adaptor(
         std::forward<typename decltype(imbued)::link_t>(imbued.link));
+    
+    // This looks like we're doing a double move, but actually both the
+    // generate() phase and the output phase need to know whether they're
+    // expiring or not.
+    // TODO(dhollman) write tests to make sure I'm not wrong about this
+    complete_chain.generate();
+    return std::forward_like<Self>(complete_chain).get_output();
   }
 };
 
@@ -170,8 +177,7 @@ template <class GeneratorDeduced, class ChainDeduced>
     requires dc::Generator<GeneratorDeduced>  //
         && IncompleteChain<ChainDeduced>      //
     && (!ChainWithTerminal<ChainDeduced>)     //
-    constexpr auto
-    operator|(GeneratorDeduced&& gen, ChainDeduced&& chain) {
+constexpr auto operator|(GeneratorDeduced&& gen, ChainDeduced&& chain) {
   std::forward<ChainDeduced>(chain).with_generator(
       std::forward<GeneratorDeduced>(gen));
 }

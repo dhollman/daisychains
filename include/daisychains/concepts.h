@@ -1,6 +1,8 @@
 #pragma once
 
 #include "daisychains/fwd.h"
+#include <concepts>
+#include <type_traits>
 
 namespace dc {
 
@@ -9,15 +11,15 @@ concept Link = std::same_as<typename std::remove_cvref_t<T>::link_t,
                             std::remove_cvref_t<T>>;
 
 template <class T>
-concept PushResult = true;  // TODO
+concept PushResult = std::convertible_to<T, push_result>;
 
 template <class T>
 concept CompleteLink =
     Link<typename std::remove_cvref_t<T>::link_t> &&
     requires(T && t, typename std::remove_cvref_t<T>::input_types types) {
-  []<typename... Ts>(meta::type_list<Ts...>) requires requires(Ts & ... ts) {
-    { t.push_value(ts...) } -> PushResult;
-  } {}(types);
+      []<typename... Ts>(meta::type_list<Ts...>) requires requires(Ts & ... ts) {
+        { t.push_value(ts...) } -> PushResult;
+      } {}(types);
 };
 
 template <class T>

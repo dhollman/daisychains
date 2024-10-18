@@ -8,26 +8,38 @@ target_include_directories(daisychains INTERFACE
   $<INSTALL_INTERFACE:include> 
 )
 
+#============================================================
+# Fetch GoogleTest
+
 include(FetchContent)
 FetchContent_Declare(
   googletest
-  URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
+  GIT_REPOSITORY https://github.com/google/googletest.git
+  GIT_TAG        b514bdc898e2951020cbdca1304b75f5950d1f59
 )
 FetchContent_MakeAvailable(googletest)
 
+#============================================================
+# Tests
+
 enable_testing()
 
-add_executable(
-  incomplete_chain_test
-  test/incomplete_chain_test.cpp
-)
-target_compile_features(incomplete_chain_test PUBLIC cxx_std_23)
-target_link_libraries(
-  incomplete_chain_test
-  daisychains
-  GTest::gtest_main
-)
+function(dc_add_test target)
+  add_executable(${target}_test test/${target}_test.cpp)
+  target_compile_features(${target}_test PUBLIC cxx_std_23)
+  target_link_libraries(${target}_test daisychains GTest::gtest_main GTest::gmock)
+  gtest_add_tests(TARGET ${target}_test)
+endfunction()
 
 include(GoogleTest)
-gtest_discover_tests(incomplete_chain_test)
+dc_add_test(chain)
+dc_add_test(cycle)
+dc_add_test(drop)
+dc_add_test(drop_while)
+dc_add_test(elements_equal)
+dc_add_test(filter)
+dc_add_test(repeat)
+dc_add_test(take)
+dc_add_test(take_while)
+dc_add_test(transform)
 
