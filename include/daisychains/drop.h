@@ -62,6 +62,7 @@ class drop_link::adaptor<Wrapped, meta::type_list<InputTypes...>,
   }
 
   constexpr void restart() { count_ = link_.count_; }
+
 };
 
 inline constexpr struct drop_fn {

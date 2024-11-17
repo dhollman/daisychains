@@ -66,18 +66,14 @@ class take_link::adaptor<Wrapped, meta::type_list<InputTypes...>,
     }
   }
 
-  constexpr auto push_stop(push_result result) {
-    if (!result.should_stop_iterating()) {
-      result = result.with_stop_iterating(count_ == 0);
-    }
-    auto downstream_result = this->base().push_stop(result);
-    if (downstream_result.should_restart()) {
-      count_ = link_.count_;
-    } else if (count_ == 0) {
-      return downstream_result.with_stop_iterating(true);
-    }
-    return downstream_result;
+  constexpr void restart() {
+    count_ = link_.count_;
   }
+
+  constexpr bool link_is_done() const {
+    return count_ == 0;
+  }
+
 };
 
 inline constexpr struct take_fn {

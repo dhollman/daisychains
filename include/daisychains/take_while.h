@@ -62,19 +62,12 @@ class take_while_link {
       }
     }
 
+  constexpr auto link_is_done() const {
+    return done_;
+  }
 
-  constexpr auto push_stop(push_result result) {
-    if (!result.should_stop_iterating()) {
-      result = result.with_stop_iterating(done_);
-    }
-    auto downstream_result = this->base().push_stop(result);
-    if (downstream_result.should_restart()) {
-      assert(done_);
-      done_ = false;
-    } else if (done_) {
-      return downstream_result.with_stop_iterating(true);
-    }
-    return downstream_result;
+  constexpr void restart() {
+    done_ = false;
   }
 
   };

@@ -89,11 +89,22 @@ class adaptor_mixin<
 
   using link_storage_mixin_t::link_storage_mixin_t;
 
+  constexpr auto link_is_done() const {
+    return false;
+  }
+
   template <class Self>
   constexpr auto push_stop(this Self&& self, push_result result) {
+    bool link_is_done = self.link_is_done();
+    if (!result.should_stop_iterating()) {
+      result = result.with_stop_iterating(link_is_done);
+    }
     auto downstream_result = self.base().push_stop(result);
-    if (downstream_result.should_restart())
+    if (downstream_result.should_restart()) {
       self.restart();
+    } else if (link_is_done) {
+      return downstream_result.with_stop_iterating(true);
+    }
     return downstream_result;
   }
 
