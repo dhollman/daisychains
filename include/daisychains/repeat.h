@@ -17,7 +17,7 @@ class repeat_generator
   Value value_;
 
  public:
-  using output_type = int;
+  using output_type = Value;
   using generator_t = repeat_generator;
 
   template <helpers::deduced_reference_for<Value> ValueDeduced>
@@ -29,6 +29,7 @@ class repeat_generator
                    public output_passthrough_mixin {
    private:
     repeat_generator generator_;
+    using generator_t = repeat_generator;
 
     using adaptor_mixin_t = adaptor_mixin<adaptor, repeat_generator>;
 
@@ -43,8 +44,8 @@ class repeat_generator
     constexpr auto generate(this Self&& self) {
       while (true) {
         auto result = self.base().push_value(self.generator_.value_);
-        if (result.should_stop_iterating()) {
-          return;
+        if (self.check_for_completion(result, /*i_am_done=*/false)) {
+          break;
         }
       }
     }

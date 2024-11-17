@@ -7,6 +7,8 @@
 #include "daisychains/output_passthrough.h"
 #include "daisychains/push_result.h"
 
+#include <cassert>
+
 namespace dc {
 
 template <class Fn>
@@ -59,6 +61,22 @@ class take_while_link {
         return push_result::stop_iterating();
       }
     }
+
+
+  constexpr auto push_stop(push_result result) {
+    if (!result.should_stop_iterating()) {
+      result = result.with_stop_iterating(done_);
+    }
+    auto downstream_result = this->base().push_stop(result);
+    if (downstream_result.should_restart()) {
+      assert(done_);
+      done_ = false;
+    } else if (done_) {
+      return downstream_result.with_stop_iterating(true);
+    }
+    return downstream_result;
+  }
+
   };
 };
 

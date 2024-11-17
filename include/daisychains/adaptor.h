@@ -47,6 +47,31 @@ class adaptor_mixin<DerivedTemplate<Wrapped, Ignored...>, Gen>
   using generator_t = Gen;
 
   using link_storage_mixin_t::link_storage_mixin_t;
+
+  template <class Self>
+  constexpr bool
+      check_for_completion(this Self&& self, push_result result,
+                           bool i_am_done) {
+    if (!result.should_restart() && !result.should_stop_iterating()) {
+      result = result.with_stop_iterating(i_am_done);
+    }
+    // TODO extract this logic since it's common to ~all generators
+    if (result.should_stop_iterating()) {
+      result = self.base().push_stop(result);
+      if (result.should_restart()) {
+        self.restart();
+        return false;
+      } else if (not result.should_stop_iterating()) {
+        // TODO figure out if this case is used anywhere
+        return false;
+      } else {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  constexpr void restart() {}
 };
 
 // Link version
@@ -66,8 +91,14 @@ class adaptor_mixin<
 
   template <class Self>
   constexpr auto push_stop(this Self&& self, push_result result) {
-    return self.base().push_stop(result);
+    auto downstream_result = self.base().push_stop(result);
+    if (downstream_result.should_restart())
+      self.restart();
+    return downstream_result;
   }
+
+  constexpr void restart() {}
+
 };
 
 }  // namespace dc

@@ -40,6 +40,18 @@ class push_result {
     return restart_;
   }
 
+  [[nodiscard]] constexpr push_result with_stop_iterating(bool value = true) const {
+    auto rv = *this;
+    rv.stop_iterating_ = value;
+    return rv;
+  }
+
+  [[nodiscard]] constexpr push_result with_restart(bool value = true) const {
+    auto rv = *this;
+    rv.restart_ = value;
+    return rv;
+  }
+
 };
 
 }  // namespace dc

@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "daisychains/cycle.h"
+#include "daisychains/drop.h"
 #include "daisychains/elements_equal.h"
 #include "daisychains/from_range.h"
 #include "daisychains/take.h"
@@ -27,6 +28,29 @@ TEST(Cycle, TakeCycleWorks) {
     dc::take(7) |  //
     dc::to<std::vector<int>>();
   EXPECT_THAT(result, ElementsAre(1, 2, 1, 2, 1, 2, 1));
+}
+
+TEST(Cycle, TakeTakeCycleWorks) {
+  auto result =  //
+    dc::from_range(std::vector{1, 2, 3}) |  //
+    dc::take(7) |  //
+    dc::take(2) |  //
+    dc::cycle() |  //
+    dc::take(9) |
+
+    dc::to<std::vector<int>>();
+  EXPECT_THAT(result, ElementsAre(1, 2, 1, 2, 1, 2, 1, 2, 1));
+}
+
+TEST(Cycle, TakeDropCycleWorks) {
+  auto result =  //
+    dc::from_range(std::vector{1, 2, 3}) |  //
+    dc::take(7) |  //
+    dc::drop(2) |  //
+    dc::cycle() |  //
+    dc::take(9) |
+    dc::to<std::vector<int>>();
+  EXPECT_THAT(result, ElementsAre(3, 3, 3, 3, 3, 3, 3, 3, 3));
 }
 
 static_assert([] {

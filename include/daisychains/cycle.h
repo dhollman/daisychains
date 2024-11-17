@@ -42,8 +42,7 @@ class cycle_link::adaptor<Wrapped, meta::type_list<InputTypes...>,
   template <class LinkDeduced, class WrappedDeduced, class InputTs>
   constexpr adaptor(LinkDeduced&& link, WrappedDeduced&& wrapped,
                     InputTs)
-      : adaptor_mixin_t(std::forward<LinkDeduced>(link),
-                        std::forward<WrappedDeduced>(wrapped)),
+      : adaptor_mixin_t(std::forward<WrappedDeduced>(wrapped)),
         link_(std::forward<LinkDeduced>(link)) {}
 
   template <class... Args>
@@ -52,12 +51,17 @@ class cycle_link::adaptor<Wrapped, meta::type_list<InputTypes...>,
   }
 
   constexpr auto push_stop(push_result result) {
-    auto downstream_result = this->base().push_stop(result);
-    if (downstream_result.should_stop_iterating()) {
-      return push_result::stop_iterating();
-    } else if (result.should_stop_iterating()) {
-      return push_result::should_restart();
-    } else {
+    auto downstream_result = this->base().push_stop(result.with_stop_iterating(false));
+    // If someone to our right said to stop iterating anyway, even though we told
+    // them that this isn't the end, then we shouldn't restart.
+    // Otherwise, since no one to our right is telling us to stop iterating, but someone
+    // to our left is, we should tell them to restart
+    if (!downstream_result.should_stop_iterating()
+        && result.should_stop_iterating()) {
+      return downstream_result.with_restart(true).with_stop_iterating(false);
+    } 
+    // Otherwise, we should just pass the result through
+    else {
       return downstream_result;
     }
   }

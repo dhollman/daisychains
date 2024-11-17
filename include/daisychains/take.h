@@ -20,7 +20,10 @@ class take_link : impl::link_base<take_link> {
  public:
   using link_t = take_link;
 
-  explicit constexpr take_link(size_t count) : count_(count) {}
+  template <std::integral T>
+  explicit constexpr take_link(T count) : count_(static_cast<size_t>(count)) {
+    assert(count >= 0);
+  }
 
   template <class... Ts>
   static constexpr auto get_output_types_from_input_types(
@@ -64,15 +67,16 @@ class take_link::adaptor<Wrapped, meta::type_list<InputTypes...>,
   }
 
   constexpr auto push_stop(push_result result) {
+    if (!result.should_stop_iterating()) {
+      result = result.with_stop_iterating(count_ == 0);
+    }
     auto downstream_result = this->base().push_stop(result);
     if (downstream_result.should_restart()) {
-      assert(count_ == 0);
       count_ = link_.count_;
-    } else if (downstream_result.should_stop_iterating() || count_ == 0) {
-      return push_result::stop_iterating();
-    } else {
-      return downstream_result;
+    } else if (count_ == 0) {
+      return downstream_result.with_stop_iterating(true);
     }
+    return downstream_result;
   }
 };
 

@@ -31,7 +31,9 @@ class from_range_generator
     using generator_t = from_range_generator;
 
    private:
+    using iterator_t = std::ranges::iterator_t<Range>;
     generator_t generator_;
+    iterator_t spot_;
 
     using adaptor_mixin_t =
         adaptor_mixin<adaptor<Wrapped>, from_range_generator>;
@@ -57,24 +59,16 @@ class from_range_generator
     // scope, but we don't have a use case for that yet.
     template <class Self>
     constexpr auto generate(this Self&& self) {
-      for (auto b = self.generator_.rng_.begin(),
-                e = self.generator_.rng_.end();
-           b != e; ++b) {
-        auto result = self.base().push_value(*b);
-        // TODO extract this logic since it's common to ~all generators
-        if (result.should_stop_iterating()) {
-          result = self.base().push_stop(result);
-          if (result.should_restart()) {
-            b = self.generator_.rng_.begin();
-          } else if (not result.should_stop_iterating()) {
-            // TODO figure out if this case is used anywhere
-            continue;
-          } else {
-            break;
-          }
+      self.restart();
+      for (auto e = self.generator_.rng_.end(); self.spot_ != e;) {
+        auto result = self.base().push_value(*self.spot_++);
+        if (self.check_for_completion(result, /*i_am_done=*/self.spot_ == e)) {
+          break;
         }
       }
     }
+
+    constexpr void restart() { spot_ = generator_.rng_.begin(); }
   };
 };
 

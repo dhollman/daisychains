@@ -57,6 +57,9 @@ class drop_while_link {
         return self.base().push_value(std::forward<Args>(args)...);
       }
     }
+
+    constexpr void restart() { started_ = false; }
+
   };
 
 };

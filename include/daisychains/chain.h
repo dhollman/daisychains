@@ -139,7 +139,6 @@ struct incomplete_chain<meta::type_list<Links...>, Generator, Terminal,
   template <class Self>
     requires (has_generator && has_terminal)  //
   constexpr auto complete_chain(this Self&& self) {
-    auto generated = Generator::get_output_types();
     auto imbued =
         [&]<class... Args>(Args&&... args) {
           return (std::forward_like<Self>(self.generator_) %= ... %=

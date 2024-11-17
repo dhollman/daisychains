@@ -1,5 +1,6 @@
 #pragma once
 
+#include <concepts>
 #include "daisychains/adaptor.h"
 #include "daisychains/meta.h"
 #include "daisychains/output_passthrough.h"
@@ -14,7 +15,10 @@ class drop_link {
  public:
   using link_t = drop_link;
 
-  explicit constexpr drop_link(size_t count) : count_(count) {}
+  template <std::integral T>
+  explicit constexpr drop_link(T count) : count_(static_cast<size_t>(count)) {
+    assert(count >= 0);
+  }
 
   template <class... Ts>
   static constexpr auto get_output_types_from_input_types(
@@ -25,7 +29,7 @@ class drop_link {
   template <class Wrapped, class InputTypes,
             class = meta::indices_for<InputTypes>>
   class adaptor;
-}
+};
 
 template <class Wrapped, class... InputTypes, size_t... Idxs>
 class drop_link::adaptor<Wrapped, meta::type_list<InputTypes...>,
@@ -43,9 +47,9 @@ class drop_link::adaptor<Wrapped, meta::type_list<InputTypes...>,
  public:
   template <class LinkDeduced, class WrappedDeduced, class InputTs>
   constexpr adaptor(LinkDeduced&& link, WrappedDeduced&& wrapped, InputTs&&...)
-      : adaptor_mixin_t(std::forward<WrappedDeduced>(wrapped)),
-        link_(std::forward<LinkDeduced>(link)),
-        count_(link_.count_) {}
+    : adaptor_mixin_t(std::forward<WrappedDeduced>(wrapped)),
+      link_(std::forward<LinkDeduced>(link)),
+      count_(link_.count_) {}
 
   template <class Self, class... Args>
   constexpr auto push_value(this Self&& self, Args&&... args) {
@@ -53,9 +57,11 @@ class drop_link::adaptor<Wrapped, meta::type_list<InputTypes...>,
       --self.count_;
       return push_result::keep_iterating();
     } else {
-      return self.wrapped().push_value(std::forward<Args>(args)...);
+      return self.base().push_value(std::forward<Args>(args)...);
     }
   }
+
+  constexpr void restart() { count_ = link_.count_; }
 };
 
 inline constexpr struct drop_fn {
