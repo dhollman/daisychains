@@ -48,10 +48,17 @@ class adaptor_mixin<DerivedTemplate<Wrapped, Ignored...>, Gen>
 
   using link_storage_mixin_t::link_storage_mixin_t;
 
+  // Whether or not the generator link itself is done (the chain itself could still
+  // be not done if other links return restart or something from the push_stop() 
+  // customization point)
+  constexpr bool generator_is_done() const {
+    return false;
+  }
+
   template <class Self>
   constexpr bool
-      check_for_completion(this Self&& self, push_result result,
-                           bool i_am_done) {
+      check_for_completion(this Self&& self, push_result result) {
+    bool i_am_done = self.generator_is_done();
     if (!result.should_restart() && !result.should_stop_iterating()) {
       result = result.with_stop_iterating(i_am_done);
     }
@@ -59,9 +66,12 @@ class adaptor_mixin<DerivedTemplate<Wrapped, Ignored...>, Gen>
     if (result.should_stop_iterating()) {
       result = self.base().push_stop(result);
       if (result.should_restart()) {
+        // TODO maybe there should be special handling for restart on
+        // an empty generator? Otherwise we just perpetually restart
+        // and things like take() will never be able to stop iterating
         self.restart();
         return false;
-      } else if (not result.should_stop_iterating()) {
+      } else if (!result.should_stop_iterating()) {
         // TODO figure out if this case is used anywhere
         return false;
       } else {
@@ -69,6 +79,26 @@ class adaptor_mixin<DerivedTemplate<Wrapped, Ignored...>, Gen>
       }
     }
     return false;
+  }
+
+  // TODO(dhollman) move these musings to a markdown file somewhere
+  // Note that the use of deducing this here is mostly for const
+  // propagation.  In theory we could propagate reference-qulifiers
+  // here (or maybe in a "generate_next", since the caller could know
+  // something special about the last use), and have some special cases
+  // where we know that we're the last use and we can move out of some
+  // sort of temporary, let's not worry about that for now.  The other
+  // thing we could think about here is if we want to abuse reference
+  // qualifiers to pass on information about whether we're being used
+  // in expression scope or not, which might allow us to do some sort
+  // of optimizations that wouldn't be safe if we're not at expression
+  // scope, but we don't have a use case for that yet.
+  template <class Self>
+  constexpr auto generate(this Self&& self) {
+    self.restart();
+    for (auto result = push_result::keep_iterating();
+      !self.check_for_completion(result);
+      result = self.generate_value()) {}
   }
 
   constexpr void restart() {}

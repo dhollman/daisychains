@@ -34,7 +34,7 @@ class cycle_link::adaptor<Wrapped, meta::type_list<InputTypes...>,
                            cycle_link>,
       public output_passthrough_mixin {
  private:
-  cycle_link link_;
+  [[no_unique_address]] cycle_link link_;
 
   using adaptor_mixin_t = adaptor_mixin<adaptor, cycle_link>;
 
@@ -51,7 +51,10 @@ class cycle_link::adaptor<Wrapped, meta::type_list<InputTypes...>,
   }
 
   constexpr auto push_stop(push_result result) {
-    auto downstream_result = this->base().push_stop(result.with_stop_iterating(false));
+    // We start out by (potentially) lying and saying we're not done to see if
+    // someone downstream of us is done anyway.
+    auto downstream_result = 
+      this->base().push_stop(result.with_stop_iterating(false));
     // If someone to our right said to stop iterating anyway, even though we told
     // them that this isn't the end, then we shouldn't restart.
     // Otherwise, since no one to our right is telling us to stop iterating, but someone

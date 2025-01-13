@@ -41,14 +41,10 @@ class repeat_generator
           generator_(std::forward<GenDeduced>(gen)) {}
 
     template <class Self>
-    constexpr auto generate(this Self&& self) {
-      while (true) {
-        auto result = self.base().push_value(self.generator_.value_);
-        if (self.check_for_completion(result, /*i_am_done=*/false)) {
-          break;
-        }
-      }
+    constexpr auto generate_value(this Self&& self) {
+      return self.base().push_value(self.generator_.value_);
     }
+
   };
 };
 

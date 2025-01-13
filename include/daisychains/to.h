@@ -2,6 +2,9 @@
 
 #include "daisychains/fwd.h"
 #include "daisychains/push_result.h"
+#include "daisychains/terminal.h"
+
+#include <utility>
 
 namespace dc {
 
@@ -10,7 +13,7 @@ class to_terminal : impl::terminal_base<to_terminal<Container>> {
  public:
   using terminal_t = to_terminal;
   template <class InputTypes>
-  class imbued {
+  class imbued : public impl::imbued_terminal_base {
    public:
     using terminal_t = to_terminal;
     using input_types = InputTypes;
@@ -28,7 +31,6 @@ class to_terminal : impl::terminal_base<to_terminal<Container>> {
       return std::forward_like<Self>(self.container_);
     }
 
-    constexpr auto push_stop(push_result result) { return result; }
 
    private:
     Container container_;

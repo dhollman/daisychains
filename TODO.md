@@ -11,6 +11,7 @@ Nonsense (especially for streaming)
   - Apparently Kris Jusiak wrote a test framework that (ab)uses this.
 - Mess around with `clangd`
 - Abuse Clang -verify mode
+- "OH one thing I wanted in reflection was the ability to make a compact optional that hides the has_value bit in the internal padding of T. But I don't think we have safe transmutation right? bit_cast unfortunately only works with POD types"
 
 People I want to co-stream with at some point
 ---------------------------------------------

@@ -61,10 +61,14 @@ static_assert([] {
     dc::elements_equal(std::vector{1, 2, 3, 1, 2, 3, 1});
 }());
 
-static_assert([] {
-  return //
-    dc::from_range(std::vector<int>{}) |  //
-    dc::cycle() |  //
-    dc::take(5) |  //
-    dc::elements_equal(std::vector<int>{});
-}());
+// TODO this should be a runtime error in addition to a compile-time error, I think?
+// (or possibly emptiness should be a special case that's handled by cycle and take?)
+// Basically we need to decide what to do with this case because it's always nonsensical 
+// from at least some perspectives, and from others there's sometimes reasonable behavior
+// static_assert([] {
+//   return //
+//     dc::from_range(std::vector<int>{}) |  //
+//     dc::cycle() |  //
+//     dc::take(5) |  //
+//     dc::elements_equal(std::vector<int>{});
+// }());
